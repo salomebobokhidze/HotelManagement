@@ -19,7 +19,7 @@ namespace HotelManagement.Core.DTOs
         public int RoomId { get; set; }
 
         [Required]
-        public int GuestId { get; set; }
+        public string GuestId { get; set; }
 
         [Required]
         public int HotelId { get; set; }
