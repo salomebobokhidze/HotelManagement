@@ -91,7 +91,7 @@ namespace HotelManagement.Infrastructure.Migrations
                         .IsUnique()
                         .HasFilter("[PhoneNumber] IS NOT NULL");
 
-                    b.ToTable("Guests");
+                    b.ToTable("Guests", (string)null);
                 });
 
             modelBuilder.Entity("HotelManagement.Core.Entities.Hotel", b =>
@@ -126,7 +126,7 @@ namespace HotelManagement.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Hotels");
+                    b.ToTable("Hotels", (string)null);
                 });
 
             modelBuilder.Entity("HotelManagement.Core.Entities.Manager", b =>
@@ -172,7 +172,7 @@ namespace HotelManagement.Infrastructure.Migrations
                     b.HasIndex("PersonalNumber")
                         .IsUnique();
 
-                    b.ToTable("Managers");
+                    b.ToTable("Managers", (string)null);
                 });
 
             modelBuilder.Entity("HotelManagement.Core.Entities.Reservation", b =>
@@ -207,7 +207,7 @@ namespace HotelManagement.Infrastructure.Migrations
 
                     b.HasIndex("RoomId");
 
-                    b.ToTable("Reservations");
+                    b.ToTable("Reservations", (string)null);
                 });
 
             modelBuilder.Entity("HotelManagement.Core.Entities.Room", b =>
@@ -235,7 +235,7 @@ namespace HotelManagement.Infrastructure.Migrations
 
                     b.HasIndex("HotelId");
 
-                    b.ToTable("Rooms");
+                    b.ToTable("Rooms", (string)null);
                 });
 
             modelBuilder.Entity("HotelManagement.Core.Entities.Manager", b =>

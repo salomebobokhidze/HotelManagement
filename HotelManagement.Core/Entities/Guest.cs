@@ -17,5 +17,7 @@ namespace HotelManagement.Core.Entities
         public string PersonalNumber { get; set; }
 
         public ICollection<Reservation> Reservations { get; set; }
+        public string? RefreshToken { get; set; }
+        public DateTime? RefreshTokenExpiryTime { get; set; }
     }
 }

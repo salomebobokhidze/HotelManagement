@@ -6,6 +6,7 @@ using System.Text;
 using HotelManagement.Core.DTOs;
 using HotelManagement.Core.Entities;
 using Microsoft.AspNetCore.Identity;
+using System.Security.Cryptography;
 
 namespace HotelManagement.Application.Services
 {
@@ -25,11 +26,9 @@ namespace HotelManagement.Application.Services
 
         public async Task<AuthResponseDto> RegisterAsync(RegisterUserDto registerDto)
         {
-
             var userExists = await _userManager.FindByEmailAsync(registerDto.Email);
             if (userExists != null)
                 return new AuthResponseDto { Success = false, Message = "User already exists" };
-
 
             var user = new Guest
             {
@@ -41,11 +40,13 @@ namespace HotelManagement.Application.Services
                 PersonalNumber = registerDto.PersonalNumber
             };
 
-
             var result = await _userManager.CreateAsync(user, registerDto.Password);
             if (!result.Succeeded)
-                return new AuthResponseDto { Success = false, Message = "User creation failed" };
-
+                return new AuthResponseDto
+                {
+                    Success = false,
+                    Message = string.Join(", ", result.Errors.Select(e => e.Description))
+                };
 
             var roleExists = await _roleManager.RoleExistsAsync("Guest");
             if (!roleExists)
@@ -53,10 +54,54 @@ namespace HotelManagement.Application.Services
                 await _roleManager.CreateAsync(new IdentityRole("Guest"));
             }
 
+            await _userManager.AddToRoleAsync(user, "Guest");
+
+            return new AuthResponseDto
+            {
+                Success = true,
+                Message = "User registered successfully",
+                Token = GenerateJwtToken(user)
+            };
+        }
+
+        public async Task<AuthResponseDto> RegisterAsync(CreateGuestDTO createGuest)
+        {
+            var userExists = await _userManager.FindByEmailAsync(createGuest.Email);
+            if (userExists != null)
+                return new AuthResponseDto { Success = false, Message = "User already exists" };
+
+            var user = new Guest
+            {
+                UserName = createGuest.Email,
+                Email = createGuest.Email,
+                FirstName = createGuest.FirstName,
+                LastName = createGuest.LastName,
+                PhoneNumber = createGuest.PhoneNumber,
+                PersonalNumber = createGuest.PersonalNumber
+            };
+
+            var result = await _userManager.CreateAsync(user, createGuest.Password);
+            if (!result.Succeeded)
+                return new AuthResponseDto
+                {
+                    Success = false,
+                    Message = string.Join(", ", result.Errors.Select(e => e.Description))
+                };
+
+            var roleExists = await _roleManager.RoleExistsAsync("Guest");
+            if (!roleExists)
+            {
+                await _roleManager.CreateAsync(new IdentityRole("Guest"));
+            }
 
             await _userManager.AddToRoleAsync(user, "Guest");
 
-            return new AuthResponseDto { Success = true, Message = "User registered successfully" };
+            return new AuthResponseDto
+            {
+                Success = true,
+                Message = "Guest registered successfully",
+                Token = GenerateJwtToken(user)
+            };
         }
 
         public async Task<AuthResponseDto> LoginAsync(LoginDto loginDto)
@@ -66,7 +111,55 @@ namespace HotelManagement.Application.Services
                 return new AuthResponseDto { Success = false, Message = "Invalid credentials" };
 
             var token = GenerateJwtToken(user);
-            return new AuthResponseDto { Success = true, Token = token };
+            var refreshToken = GenerateRefreshToken();
+
+            // Store refresh token (you'll need to implement this)
+            user.RefreshToken = refreshToken;
+            user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
+            await _userManager.UpdateAsync(user);
+
+            return new AuthResponseDto
+            {
+                Success = true,
+                Token = token,
+                RefreshToken = refreshToken
+            };
+        }
+
+        public async Task<AuthResponseDto> RefreshTokenAsync(RefreshTokenDto refreshTokenDto)
+        {
+            var principal = GetPrincipalFromExpiredToken(refreshTokenDto.Token);
+            if (principal == null)
+                return new AuthResponseDto { Success = false, Message = "Invalid token" };
+
+            var userId = principal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var user = await _userManager.FindByIdAsync(userId);
+
+            if (user == null || user.RefreshToken != refreshTokenDto.RefreshToken ||
+                user.RefreshTokenExpiryTime <= DateTime.UtcNow)
+                return new AuthResponseDto { Success = false, Message = "Invalid refresh token" };
+
+            var newToken = GenerateJwtToken(user);
+            var newRefreshToken = GenerateRefreshToken();
+
+            user.RefreshToken = newRefreshToken;
+            await _userManager.UpdateAsync(user);
+
+            return new AuthResponseDto
+            {
+                Success = true,
+                Token = newToken,
+                RefreshToken = newRefreshToken
+            };
+        }
+
+        public async Task RevokeTokenAsync(RevokeTokenDto revokeTokenDto)
+        {
+            var user = await _userManager.FindByIdAsync(revokeTokenDto.UserId);
+            if (user == null) return;
+
+            user.RefreshToken = null;
+            await _userManager.UpdateAsync(user);
         }
 
         public async Task<CurrentUserDTO> GetCurrentUserAsync(ClaimsPrincipal user)
@@ -92,35 +185,60 @@ namespace HotelManagement.Application.Services
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.NameIdentifier, user.Id),
-                new Claim(ClaimTypes.Email, user.Email)
+                new Claim(ClaimTypes.Email, user.Email),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
             };
 
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Secret"]));
+            // Add roles if needed
+            var roles = _userManager.GetRolesAsync(user).Result;
+            foreach (var role in roles)
+            {
+                claims.Add(new Claim(ClaimTypes.Role, role));
+            }
+
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(
+                _configuration["Jwt:Secret"] ?? throw new InvalidOperationException("JWT Secret not configured")));
             var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             var token = new JwtSecurityToken(
-                _configuration["Jwt:Issuer"],
-                _configuration["Jwt:Audience"],
-                claims,
-                expires: DateTime.UtcNow.AddHours(2),
+                issuer: _configuration["Jwt:Issuer"],
+                audience: _configuration["Jwt:Audience"],
+                claims: claims,
+                expires: DateTime.UtcNow.AddMinutes(Convert.ToInt32(_configuration["Jwt:ExpiryInMinutes"])),
                 signingCredentials: credentials);
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
-        public Task<AuthResponseDto> RegisterAsync(CreateGuestDTO createGuest)
+        private string GenerateRefreshToken()
         {
-            throw new NotImplementedException();
+            var randomNumber = new byte[32];
+            using var rng = RandomNumberGenerator.Create();
+            rng.GetBytes(randomNumber);
+            return Convert.ToBase64String(randomNumber);
         }
 
-        public Task<AuthResponseDto> RefreshTokenAsync(RefreshTokenDto refreshTokenDto)
+        private ClaimsPrincipal? GetPrincipalFromExpiredToken(string token)
         {
-            throw new NotImplementedException();
-        }
+            var tokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateAudience = false,
+                ValidateIssuer = false,
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(
+                    _configuration["Jwt:Secret"] ?? throw new InvalidOperationException("JWT Secret not configured"))),
+                ValidateLifetime = false
+            };
 
-        public Task RevokeTokenAsync(RevokeTokenDto revokeTokenDto)
-        {
-            throw new NotImplementedException();
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var principal = tokenHandler.ValidateToken(token, tokenValidationParameters, out var securityToken);
+
+            if (securityToken is not JwtSecurityToken jwtSecurityToken ||
+                !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256,
+                    StringComparison.InvariantCultureIgnoreCase))
+                throw new SecurityTokenException("Invalid token");
+
+            return principal;
         }
     }
 }
