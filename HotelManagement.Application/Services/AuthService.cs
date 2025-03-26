@@ -113,54 +113,18 @@ namespace HotelManagement.Application.Services
             var token = GenerateJwtToken(user);
             var refreshToken = GenerateRefreshToken();
 
-            // Store refresh token (you'll need to implement this)
-            user.RefreshToken = refreshToken;
-            user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
+           
             await _userManager.UpdateAsync(user);
 
             return new AuthResponseDto
             {
                 Success = true,
                 Token = token,
-                RefreshToken = refreshToken
+                
             };
         }
 
-        public async Task<AuthResponseDto> RefreshTokenAsync(RefreshTokenDto refreshTokenDto)
-        {
-            var principal = GetPrincipalFromExpiredToken(refreshTokenDto.Token);
-            if (principal == null)
-                return new AuthResponseDto { Success = false, Message = "Invalid token" };
-
-            var userId = principal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            var user = await _userManager.FindByIdAsync(userId);
-
-            if (user == null || user.RefreshToken != refreshTokenDto.RefreshToken ||
-                user.RefreshTokenExpiryTime <= DateTime.UtcNow)
-                return new AuthResponseDto { Success = false, Message = "Invalid refresh token" };
-
-            var newToken = GenerateJwtToken(user);
-            var newRefreshToken = GenerateRefreshToken();
-
-            user.RefreshToken = newRefreshToken;
-            await _userManager.UpdateAsync(user);
-
-            return new AuthResponseDto
-            {
-                Success = true,
-                Token = newToken,
-                RefreshToken = newRefreshToken
-            };
-        }
-
-        public async Task RevokeTokenAsync(RevokeTokenDto revokeTokenDto)
-        {
-            var user = await _userManager.FindByIdAsync(revokeTokenDto.UserId);
-            if (user == null) return;
-
-            user.RefreshToken = null;
-            await _userManager.UpdateAsync(user);
-        }
+        
 
         public async Task<CurrentUserDTO> GetCurrentUserAsync(ClaimsPrincipal user)
         {

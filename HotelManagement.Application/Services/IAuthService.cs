@@ -10,8 +10,6 @@ namespace HotelManagement.Application.Services
             Task<AuthResponseDto> RegisterAsync(RegisterUserDto registerDto);
             Task<AuthResponseDto> RegisterAsync(CreateGuestDTO createGuest);
             Task<AuthResponseDto> LoginAsync(LoginDto loginDto);
-            Task<AuthResponseDto> RefreshTokenAsync(RefreshTokenDto refreshTokenDto);
-            Task RevokeTokenAsync(RevokeTokenDto revokeTokenDto);
             Task<CurrentUserDTO> GetCurrentUserAsync(ClaimsPrincipal user);
         }
     }

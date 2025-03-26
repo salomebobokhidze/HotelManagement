@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -52,9 +51,16 @@ namespace HotelManagement.Core.Services
             return await _guestRepository.DeleteAsync(id);
         }
 
-        public Task<GuestDTO> GetGuestByIdAsync(int id)
+        public async Task<GuestDTO> GetGuestByIdAsync(int id)
         {
-            throw new NotImplementedException();
+            var guest = await _guestRepository.GetByIdAsync(id);
+
+            if (guest == null)
+                return null;
+
+            
+            return new GuestDTO(guest);
         }
+
     }
 }

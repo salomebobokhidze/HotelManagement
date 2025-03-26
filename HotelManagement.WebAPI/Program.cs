@@ -24,8 +24,7 @@ internal class Program
 
         builder.Services.AddScoped<DbContext, AppDbContext>();
         builder.Services.AddDbContext<AppDbContext>(options =>
-            options.UseSqlServer(builder.Configuration.
-                GetConnectionString("DefaultConnection")));
+            options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
         builder.Services.AddIdentity<Guest, IdentityRole>()
             .AddEntityFrameworkStores<AppDbContext>()
@@ -43,6 +42,9 @@ internal class Program
         builder.Services.AddScoped<IRoomRepository, RoomRepository>();
         builder.Services.AddScoped<IManagerRepository, ManagerRepository>();
         builder.Services.AddScoped<IReservationRepository, ReservationRepository>();
+
+        // Register the generic repository for all types
+        builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 
         builder.Services.AddAuthentication(options =>
         {
@@ -62,7 +64,6 @@ internal class Program
                 IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
             };
         });
-
 
         builder.Services.AddAuthorization();
 
