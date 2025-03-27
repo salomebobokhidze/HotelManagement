@@ -7,6 +7,9 @@ using System.Text;
 using HotelManagement.Core.Entities;
 using HotelManagement.Infrastructure.Data;
 using HotelManagement.Application.Services;
+using HotelManagement.Core.Interfaces;
+using HotelManagement.Core.Services;
+using HotelManagement.Infrastructure.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -40,6 +43,27 @@ builder.Services.AddAuthentication(options =>
 
 // Add your services
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IGuestService, GuestService>();
+builder.Services.AddScoped<IHotelService, HotelService>();
+builder.Services.AddScoped<IReservationService, ReservationService>();
+builder.Services.AddScoped<IManagerService, ManagerService>();
+builder.Services.AddScoped<IRoomService, RoomService>();
+
+
+builder.Services.AddScoped<IGuestRepository, GuestRepository>();
+builder.Services.AddScoped<IHotelRepository, HotelRepository>();
+builder.Services.AddScoped<IManagerRepository, ManagerRepository>();
+builder.Services.AddScoped<IRoomRepository, RoomRepository>();
+builder.Services.AddScoped<IReservationRepository, ReservationRepository>();
+
+builder.Services.AddScoped<IGenericRepository<Manager>, GenericRepository<Manager>>();
+builder.Services.AddScoped<IGenericRepository<Guest>, GenericRepository<Guest>>();
+builder.Services.AddScoped<IGenericRepository<Hotel>, GenericRepository<Hotel>>();
+builder.Services.AddScoped<IGenericRepository<Room>, GenericRepository<Room>>();
+builder.Services.AddScoped<IGenericRepository<Reservation>, GenericRepository<Reservation>>();
+
+
+
 
 // Add controllers
 builder.Services.AddControllers();
@@ -51,10 +75,11 @@ builder.Services.AddSwaggerGen(c =>
 
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
-        Description = "JWT Authorization header using the Bearer scheme",
-        Name = "Authorization",
         In = ParameterLocation.Header,
-        Type = SecuritySchemeType.ApiKey,
+        Description = "Please enter a valid token",
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        BearerFormat = "JWT",
         Scheme = "Bearer"
     });
 
@@ -68,9 +93,6 @@ builder.Services.AddSwaggerGen(c =>
                     Type = ReferenceType.SecurityScheme,
                     Id = "Bearer"
                 },
-                Scheme = "oauth2",
-                Name = "Bearer",
-                In = ParameterLocation.Header,
             },
             new List<string>()
         }
