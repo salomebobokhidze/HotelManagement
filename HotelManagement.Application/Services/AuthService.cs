@@ -3,10 +3,10 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using System.Security.Cryptography;
 using HotelManagement.Core.DTOs;
 using HotelManagement.Core.Entities;
 using Microsoft.AspNetCore.Identity;
-using System.Security.Cryptography;
 using Microsoft.EntityFrameworkCore;
 
 namespace HotelManagement.Application.Services
@@ -27,7 +27,7 @@ namespace HotelManagement.Application.Services
             _configuration = configuration;
         }
 
-        public async Task<AuthResponseDto> RegisterAsync(RegisterUserDto registerDto)
+        public async Task<AuthResponseDto> RegisterGuestAsync(RegisterUserDto registerDto)
         {
             // Check if email exists
             var userExists = await _userManager.FindByEmailAsync(registerDto.Email);
@@ -55,7 +55,8 @@ namespace HotelManagement.Application.Services
                 FirstName = registerDto.FirstName,
                 LastName = registerDto.LastName,
                 PhoneNumber = registerDto.PhoneNumber,
-                PersonalNumber = registerDto.PersonalNumber
+                PersonalNumber = registerDto.PersonalNumber,
+                SecurityStamp = Guid.NewGuid().ToString()
             };
 
             var result = await _userManager.CreateAsync(user, registerDto.Password);
@@ -82,31 +83,7 @@ namespace HotelManagement.Application.Services
             };
         }
 
-        public async Task<AuthResponseDto> RegisterAdminAsync(RegisterUserDto registerDto)
-        {
-            var result = await RegisterAsync(registerDto);
-            if (!result.Success)
-                return result;
-
-            var user = await _userManager.FindByEmailAsync(registerDto.Email);
-
-            if (!await _roleManager.RoleExistsAsync("Admin"))
-                await _roleManager.CreateAsync(new IdentityRole("Admin"));
-
-            await _userManager.AddToRoleAsync(user, "Admin");
-
-            var roles = await _userManager.GetRolesAsync(user);
-
-            return new AuthResponseDto
-            {
-                Success = true,
-                Message = "Admin registered successfully",
-                Token = GenerateJwtToken(user),
-                Roles = roles.ToList()
-            };
-        }
-
-        public async Task<AuthResponseDto> RegisterAsync(CreateGuestDTO createGuest)
+        public async Task<AuthResponseDto> RegisterGuestAsync(CreateGuestDTO createGuest)
         {
             // Check if email exists
             var userExists = await _userManager.FindByEmailAsync(createGuest.Email);
@@ -134,7 +111,8 @@ namespace HotelManagement.Application.Services
                 FirstName = createGuest.FirstName,
                 LastName = createGuest.LastName,
                 PhoneNumber = createGuest.PhoneNumber,
-                PersonalNumber = createGuest.PersonalNumber
+                PersonalNumber = createGuest.PersonalNumber,
+                SecurityStamp = Guid.NewGuid().ToString()
             };
 
             var result = await _userManager.CreateAsync(user, createGuest.Password);
@@ -161,7 +139,31 @@ namespace HotelManagement.Application.Services
             };
         }
 
-        public async Task<AuthResponseDto> LoginAsync(LoginDto loginDto)
+        public async Task<AuthResponseDto> RegisterAdminAsync(RegisterUserDto registerDto)
+        {
+            var result = await RegisterGuestAsync(registerDto);
+            if (!result.Success)
+                return result;
+
+            var user = await _userManager.FindByEmailAsync(registerDto.Email);
+
+            if (!await _roleManager.RoleExistsAsync("Admin"))
+                await _roleManager.CreateAsync(new IdentityRole("Admin"));
+
+            await _userManager.AddToRoleAsync(user, "Admin");
+
+            var roles = await _userManager.GetRolesAsync(user);
+
+            return new AuthResponseDto
+            {
+                Success = true,
+                Message = "Admin registered successfully",
+                Token = GenerateJwtToken(user),
+                Roles = roles.ToList()
+            };
+        }
+
+        public async Task<AuthResponseDto> LoginUserAsync(LoginDto loginDto)
         {
             var user = await _userManager.FindByEmailAsync(loginDto.Email);
             if (user == null || !await _userManager.CheckPasswordAsync(user, loginDto.Password))
@@ -179,6 +181,7 @@ namespace HotelManagement.Application.Services
             {
                 Success = true,
                 Token = token,
+                RefreshToken = refreshToken,
                 Message = "Login successful",
                 Roles = roles.ToList()
             };
@@ -229,7 +232,7 @@ namespace HotelManagement.Application.Services
                 audience: _configuration["Jwt:Audience"],
                 claims: claims,
                 expires: DateTime.UtcNow.AddMinutes(
-                    Convert.ToInt32(_configuration["Jwt:ExpirationInMinutes"] ?? "1440")),
+                    Convert.ToInt32(_configuration["Jwt:ExpirationInMinutes"] ?? "60")),
                 signingCredentials: credentials);
 
             return new JwtSecurityTokenHandler().WriteToken(token);
@@ -264,6 +267,21 @@ namespace HotelManagement.Application.Services
                 throw new SecurityTokenException("Invalid token");
 
             return principal;
+        }
+
+        public Task<AuthResponseDto> RegisterAsync(RegisterUserDto registerDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<AuthResponseDto> RegisterAsync(CreateGuestDTO createGuest)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<AuthResponseDto> LoginAsync(LoginDto loginDto)
+        {
+            throw new NotImplementedException();
         }
     }
 }

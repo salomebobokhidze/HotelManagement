@@ -1,17 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using HotelManagement.Core.Entities;
+using Microsoft.AspNetCore.Identity;
 
 namespace HotelManagement.Infrastructure.Data
 {
-    public class AppDbContext : DbContext
+    // Change inheritance to IdentityDbContext
+    public class AppDbContext : IdentityDbContext<Guest, IdentityRole, string>
     {
         public DbSet<Hotel> Hotels { get; set; }
         public DbSet<Room> Rooms { get; set; }
         public DbSet<Manager> Managers { get; set; }
-        public DbSet<Guest> Guests { get; set; }
         public DbSet<Reservation> Reservations { get; set; }
 
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
@@ -20,13 +19,23 @@ namespace HotelManagement.Infrastructure.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            // Call base first to configure identity tables
             base.OnModelCreating(modelBuilder);
+
+            // Rename Identity tables (optional)
+            modelBuilder.Entity<Guest>().ToTable("Guests");
+            modelBuilder.Entity<IdentityRole>().ToTable("Roles");
+            modelBuilder.Entity<IdentityUserRole<string>>().ToTable("UserRoles");
+            modelBuilder.Entity<IdentityUserClaim<string>>().ToTable("UserClaims");
+            modelBuilder.Entity<IdentityUserLogin<string>>().ToTable("UserLogins");
+            modelBuilder.Entity<IdentityRoleClaim<string>>().ToTable("RoleClaims");
+            modelBuilder.Entity<IdentityUserToken<string>>().ToTable("UserTokens");
 
             // Hotel - Manager (1-to-1)
             modelBuilder.Entity<Hotel>()
                 .HasOne(h => h.Manager)
                 .WithOne(m => m.Hotel)
-                .HasForeignKey<Manager>(m => m.HotelId) 
+                .HasForeignKey<Manager>(m => m.HotelId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             // Hotel - Rooms (1-to-Many)
@@ -57,7 +66,7 @@ namespace HotelManagement.Infrastructure.Data
                 .HasForeignKey(r => r.HotelId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            
+            // Unique constraints
             modelBuilder.Entity<Manager>()
                 .HasIndex(m => m.Email)
                 .IsUnique();

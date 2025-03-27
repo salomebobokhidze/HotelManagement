@@ -100,9 +100,10 @@ namespace HotelManagement.Infrastructure.Repositories
             return await _dbSet.CountAsync(predicate);
         }
 
+        // Implement SaveAsync to commit all changes in the context to the database
         public Task SaveAsync()
         {
-            throw new NotImplementedException();
+            return _context.SaveChangesAsync(); // Save all changes made in the DbContext to the database
         }
     }
 }
