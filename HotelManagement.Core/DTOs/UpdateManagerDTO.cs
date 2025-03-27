@@ -1,26 +1,25 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace HotelManagement.Core.DTOs
 {
     public class UpdateManagerDTO
     {
         [Required]
-        public required string FirstName { get; set; }
+        [StringLength(50, MinimumLength = 2, ErrorMessage = "First name must be between 2 and 50 characters")]
+        public string FirstName { get; set; }
 
         [Required]
-        public required string LastName { get; set; }
+        [StringLength(50, MinimumLength = 2, ErrorMessage = "Last name must be between 2 and 50 characters")]
+        public string LastName { get; set; }
 
         [Required]
-        [EmailAddress]
-        public required string Email { get; set; }
+        [EmailAddress(ErrorMessage = "Invalid email address")]
+        [StringLength(100, ErrorMessage = "Email address cannot exceed 100 characters")]
+        public string Email { get; set; }
 
         [Required]
-        public required string PhoneNumber { get; set; }
+        [Phone(ErrorMessage = "Invalid phone number")]
+        [StringLength(20, MinimumLength = 10, ErrorMessage = "Phone number must be between 10 and 20 characters")]
+        public string PhoneNumber { get; set; }
     }
 }

@@ -1,37 +1,36 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Identity;
 
 namespace HotelManagement.Core.Entities
 {
-    public class Manager
+    public class Manager : IdentityUser<int>  // Use int-based Identity key
     {
-        public int Id { get; set; }
-
         [Required]
+        [StringLength(50, MinimumLength = 2)]
         public string FirstName { get; set; }
 
         [Required]
+        [StringLength(50, MinimumLength = 2)]
         public string LastName { get; set; }
 
         [Required]
-        [MaxLength(11)]
+        [StringLength(11, MinimumLength = 11)]
+        [RegularExpression(@"^\d{11}$", ErrorMessage = "Personal Number must be 11 digits")]
         public string PersonalNumber { get; set; }
 
+        // Override Email from IdentityUser with additional validation
         [Required]
         [EmailAddress]
-        public string Email { get; set; }
+        [StringLength(100)]
+        public override string Email { get; set; }
 
         [Required]
-        public string PhoneNumber { get; set; }
+        [Phone]
+        [StringLength(20)]
+        public override string PhoneNumber { get; set; }
 
-        [Required]
-        public int HotelId { get; set; }
-
+        // Navigation property for Hotel
+        public int? HotelId { get; set; }
         public Hotel Hotel { get; set; }
     }
 }
-

@@ -4,6 +4,7 @@ using HotelManagement.Core.Entities;
 using HotelManagement.Core.Interfaces;
 using HotelManagement.Infrastructure.Repositories;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace HotelManagement.Core.Services
@@ -12,10 +13,10 @@ namespace HotelManagement.Core.Services
     {
         private readonly IGenericRepository<Manager> _managerRepository;
 
-        // Constructor injection of the generic repository
         public ManagerService(IGenericRepository<Manager> managerRepository)
         {
-            _managerRepository = managerRepository ?? throw new ArgumentNullException(nameof(managerRepository));
+            _managerRepository = managerRepository ??
+                throw new ArgumentNullException(nameof(managerRepository));
         }
 
         public async Task<ManagerDTO> RegisterManagerAsync(CreateManagerDTO managerDto)
@@ -23,72 +24,79 @@ namespace HotelManagement.Core.Services
             if (managerDto == null)
                 throw new ArgumentNullException(nameof(managerDto));
 
+            // Check for existing email
+            var existingEmail = (await _managerRepository.GetAllAsync())
+                .Any(m => m.Email == managerDto.Email);
+            if (existingEmail)
+                throw new InvalidOperationException("Email already registered");
+
+            // Check for existing personal number
+            var existingPersonalNumber = (await _managerRepository.GetAllAsync())
+                .Any(m => m.PersonalNumber == managerDto.PersonalNumber);
+            if (existingPersonalNumber)
+                throw new InvalidOperationException("Personal number already registered");
+
             var manager = new Manager
             {
                 FirstName = managerDto.FirstName,
                 LastName = managerDto.LastName,
                 Email = managerDto.Email,
                 PersonalNumber = managerDto.PersonalNumber,
-                PhoneNumber = managerDto.PhoneNumber
+                PhoneNumber = managerDto.PhoneNumber,
+                
             };
 
-            // Add the manager using the generic repository
             await _managerRepository.AddAsync(manager);
+            await _managerRepository.SaveAsync(); // Using the repository's SaveAsync
 
             return new ManagerDTO(manager);
         }
 
-        public async Task UpdateManagerAsync(int id, UpdateManagerDTO managerDto)
+        public async Task<bool> UpdateManagerAsync(int id, UpdateManagerDTO managerDto)
         {
             if (managerDto == null)
                 throw new ArgumentNullException(nameof(managerDto));
 
             var manager = await _managerRepository.GetByIdAsync(id);
             if (manager == null)
-                throw new KeyNotFoundException("Manager not found");
+                return false;
 
-            // Update the manager's details
+            // Update properties
             manager.FirstName = managerDto.FirstName;
             manager.LastName = managerDto.LastName;
             manager.Email = managerDto.Email;
             manager.PhoneNumber = managerDto.PhoneNumber;
 
-            // Update the manager using the generic repository
             await _managerRepository.UpdateAsync(manager);
+            await _managerRepository.SaveAsync();
+
+            return true;
         }
 
-        public async Task DeleteManagerAsync(int id)
+        public async Task<bool> DeleteManagerAsync(int id)
         {
             var manager = await _managerRepository.GetByIdAsync(id);
             if (manager == null)
-                throw new KeyNotFoundException("Manager not found");
+                return false;
 
-            // Delete the manager using the generic repository
             await _managerRepository.DeleteAsync(id);
+            await _managerRepository.SaveAsync();
+
+            return true;
         }
 
         public async Task<ManagerDTO> GetManagerByIdAsync(int id)
         {
             var manager = await _managerRepository.GetByIdAsync(id);
             if (manager == null)
-                throw new KeyNotFoundException("Manager not found");
+                return null;
 
             return new ManagerDTO(manager);
         }
 
-        public Task<ManagerDTO> CreateManagerAsync(CreateManagerDTO dto)
+        public async Task<ManagerDTO> CreateManagerAsync(CreateManagerDTO dto)
         {
-            throw new NotImplementedException();
-        }
-
-        Task<bool> IManagerService.UpdateManagerAsync(int id, UpdateManagerDTO dto)
-        {
-            throw new NotImplementedException();
-        }
-
-        Task<bool> IManagerService.DeleteManagerAsync(int id)
-        {
-            throw new NotImplementedException();
+            return await RegisterManagerAsync(dto);
         }
     }
 }

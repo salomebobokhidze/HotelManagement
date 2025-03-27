@@ -99,5 +99,10 @@ namespace HotelManagement.Infrastructure.Repositories
         {
             return await _dbSet.CountAsync(predicate);
         }
+
+        public Task SaveAsync()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

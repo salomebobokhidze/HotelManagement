@@ -23,7 +23,7 @@ namespace HotelManagement.Core.DTOs
             public string PersonalNumber { get; set; }
 
             [Required]
-            [MinLength(8)]
+            
             public string Password { get; set; }
         }
     }
