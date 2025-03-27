@@ -65,7 +65,7 @@ namespace HotelManagement.Core.Services
             return await _roomRepository.DeleteAsync(id);
         }
 
-        // Method to get all rooms with filters applied manually
+        
         public async Task<IEnumerable<RoomDTO>> GetAllRoomsAsync(int? hotelId, bool? isAvailable, decimal? minPrice, decimal? maxPrice)
         {
             var rooms = await _roomRepository.GetAllAsync();
@@ -76,7 +76,7 @@ namespace HotelManagement.Core.Services
             {
                 bool matches = true;
 
-                // Apply each filter condition manually
+                
                 if (hotelId.HasValue && room.HotelId != hotelId.Value)
                     matches = false;
 
@@ -89,7 +89,7 @@ namespace HotelManagement.Core.Services
                 if (maxPrice.HasValue && room.Price > maxPrice.Value)
                     matches = false;
 
-                // If the room matches all conditions, add it to the filtered list
+                
                 if (matches)
                 {
                     filteredRooms.Add(room);
@@ -99,7 +99,7 @@ namespace HotelManagement.Core.Services
             return ConvertToRoomDTOs(filteredRooms);
         }
 
-        // Method to get a room by its ID
+        
         public async Task<RoomDTO> GetRoomByIdAsync(int id)
         {
             if (id <= 0)
@@ -112,7 +112,7 @@ namespace HotelManagement.Core.Services
             return new RoomDTO(room);
         }
 
-        // Helper method to convert rooms to DTOs
+        
         private IEnumerable<RoomDTO> ConvertToRoomDTOs(IEnumerable<Room> rooms)
         {
             List<RoomDTO> roomDTOs = new List<RoomDTO>();

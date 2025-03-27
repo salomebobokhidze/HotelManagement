@@ -24,13 +24,13 @@ namespace HotelManagement.Core.Services
             if (managerDto == null)
                 throw new ArgumentNullException(nameof(managerDto));
 
-            // Check for existing email
+            
             var existingEmail = (await _managerRepository.GetAllAsync())
                 .Any(m => m.Email == managerDto.Email);
             if (existingEmail)
                 throw new InvalidOperationException("Email already registered");
 
-            // Check for existing personal number
+            
             var existingPersonalNumber = (await _managerRepository.GetAllAsync())
                 .Any(m => m.PersonalNumber == managerDto.PersonalNumber);
             if (existingPersonalNumber)
@@ -47,7 +47,7 @@ namespace HotelManagement.Core.Services
             };
 
             await _managerRepository.AddAsync(manager);
-            await _managerRepository.SaveAsync(); // Using the repository's SaveAsync
+            await _managerRepository.SaveAsync(); 
 
             return new ManagerDTO(manager);
         }
@@ -61,7 +61,7 @@ namespace HotelManagement.Core.Services
             if (manager == null)
                 return false;
 
-            // Update properties
+            
             manager.FirstName = managerDto.FirstName;
             manager.LastName = managerDto.LastName;
             manager.Email = managerDto.Email;

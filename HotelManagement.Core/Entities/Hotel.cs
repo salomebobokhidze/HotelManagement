@@ -27,13 +27,13 @@ namespace HotelManagement.Core.Entities
         [StringLength(200)]
         public string Address { get; set; }
 
-        // Foreign key for Manager
+        
         public string ManagerId { get; set; }
 
-        // Navigation property for Manager
+        
         public Manager Manager { get; set; }
 
-        // Initialize collections in constructor to prevent null reference issues
+        
         public Hotel()
         {
             Rooms = new HashSet<Room>();

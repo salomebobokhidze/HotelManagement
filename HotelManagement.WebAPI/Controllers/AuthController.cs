@@ -25,7 +25,7 @@ namespace HotelManagement.API.Controllers
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        // Register guest endpoint
+       
         [HttpPost("register")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AuthResponseDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(AuthResponseDto))]
@@ -65,9 +65,9 @@ namespace HotelManagement.API.Controllers
             }
         }
 
-        // Register admin endpoint
+        
         [HttpPost("register-admin")]
-        [Authorize(Roles = "Admin")]  // Ensure this only works for users with "Admin" role
+        [Authorize(Roles = "Admin")]  
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AuthResponseDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(AuthResponseDto))]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -109,7 +109,7 @@ namespace HotelManagement.API.Controllers
             }
         }
 
-        // Login endpoint
+        
         [HttpPost("login")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AuthResponseDto))]
         [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(AuthResponseDto))]
@@ -150,7 +150,6 @@ namespace HotelManagement.API.Controllers
             }
         }
 
-        // Get current user endpoint
         [HttpGet("current-user")]
         [Authorize]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(CurrentUserDTO))]

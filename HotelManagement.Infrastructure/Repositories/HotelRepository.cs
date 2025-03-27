@@ -17,13 +17,13 @@ namespace HotelManagement.Infrastructure.Repositories
             _hotelContext = hotelContext ?? throw new ArgumentNullException(nameof(hotelContext));
         }
 
-        // Save changes to the database
+        
         public async Task SaveAsync()
         {
             await _hotelContext.SaveChangesAsync();
         }
 
-        // Get filtered hotels based on the provided filter
+        
         public async Task<IEnumerable<Hotel>> GetFilteredHotelsAsync(string filter)
         {
             if (string.IsNullOrEmpty(filter))

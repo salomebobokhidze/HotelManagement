@@ -19,7 +19,7 @@ namespace HotelManagement.Core.Entities
         [RegularExpression(@"^\d{11}$", ErrorMessage = "Personal Number must be 11 digits")]
         public string PersonalNumber { get; set; }
 
-        // Consider initializing the collection in the constructor
+        
         public Guest()
         {
             Reservations = new HashSet<Reservation>();

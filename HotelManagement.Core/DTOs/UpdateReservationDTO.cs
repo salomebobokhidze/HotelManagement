@@ -15,7 +15,6 @@ namespace HotelManagement.Core.DTOs
         [DisplayFormat(DataFormatString = "{0:yyyy-MM-dd}", ApplyFormatInEditMode = true)]
         public DateTime CheckOutDate { get; set; }
 
-        // Custom validation method
         public bool ValidateDates()
         {
             return CheckInDate < CheckOutDate &&

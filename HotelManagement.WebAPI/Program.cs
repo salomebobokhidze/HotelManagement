@@ -20,7 +20,7 @@ builder.Services.AddIdentity<Guest, IdentityRole>()
     .AddEntityFrameworkStores<AppDbContext>()
     .AddDefaultTokenProviders();
 
-// Configure Authentication with JWT
+
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -41,7 +41,6 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-// Add your services
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IGuestService, GuestService>();
 builder.Services.AddScoped<IHotelService, HotelService>();
@@ -65,10 +64,10 @@ builder.Services.AddScoped<IGenericRepository<Reservation>, GenericRepository<Re
 
 
 
-// Add controllers
+
 builder.Services.AddControllers();
 
-// Configure Swagger with JWT support
+
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "Hotel Management API", Version = "v1" });
@@ -101,7 +100,7 @@ builder.Services.AddSwaggerGen(c =>
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -115,7 +114,7 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-// Seed roles and admin user
+
 using (var scope = app.Services.CreateScope())
 {
     var serviceProvider = scope.ServiceProvider;
@@ -129,7 +128,7 @@ async Task SeedRolesAndAdmin(IServiceProvider serviceProvider)
     var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
     var userManager = serviceProvider.GetRequiredService<UserManager<Guest>>();
 
-    // Seed roles
+    
     string[] roleNames = { "Admin", "Guest" };
     foreach (var roleName in roleNames)
     {
@@ -139,7 +138,7 @@ async Task SeedRolesAndAdmin(IServiceProvider serviceProvider)
         }
     }
 
-    // Seed admin user
+    
     var adminEmail = "admin@hotel.com";
     var adminUser = await userManager.FindByEmailAsync(adminEmail);
     if (adminUser == null)

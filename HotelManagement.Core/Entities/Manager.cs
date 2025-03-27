@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Identity;
 
 namespace HotelManagement.Core.Entities
 {
-    public class Manager : IdentityUser<int>  // Use int-based Identity key
+    public class Manager : IdentityUser<int> 
     {
         [Required]
         [StringLength(50, MinimumLength = 2)]
@@ -18,7 +18,7 @@ namespace HotelManagement.Core.Entities
         [RegularExpression(@"^\d{11}$", ErrorMessage = "Personal Number must be 11 digits")]
         public string PersonalNumber { get; set; }
 
-        // Override Email from IdentityUser with additional validation
+        
         [Required]
         [EmailAddress]
         [StringLength(100)]
@@ -29,7 +29,7 @@ namespace HotelManagement.Core.Entities
         [StringLength(20)]
         public override string PhoneNumber { get; set; }
 
-        // Navigation property for Hotel
+        
         public int? HotelId { get; set; }
         public Hotel Hotel { get; set; }
     }

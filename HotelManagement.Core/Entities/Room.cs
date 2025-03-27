@@ -21,7 +21,7 @@ namespace HotelManagement.Core.Entities
         public int HotelId { get; set; }
         public Hotel Hotel { get; set; }
 
-        // Initialize collection to prevent null reference issues
+        
         public Room()
         {
             Reservations = new HashSet<Reservation>();
@@ -29,7 +29,7 @@ namespace HotelManagement.Core.Entities
 
         public ICollection<Reservation> Reservations { get; set; }
 
-        // Method to check room availability
+        
         public bool IsRoomAvailable(DateTime checkInDate, DateTime checkOutDate)
         {
             return Reservations == null ||

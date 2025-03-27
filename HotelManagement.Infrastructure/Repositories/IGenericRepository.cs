@@ -13,6 +13,6 @@ namespace HotelManagement.Infrastructure.Repositories
         Task<IEnumerable<T>> GetAllAsync();
         Task UpdateAsync(T entity);
         Task<bool> DeleteAsync(int id);
-        Task SaveAsync();  // Save changes to the repository (e.g., commit to the database)
+        Task SaveAsync();  
     }
 }

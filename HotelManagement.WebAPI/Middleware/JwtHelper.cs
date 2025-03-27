@@ -24,7 +24,7 @@ namespace HotelManagement.WebAPI.Middleware
             var claims = new[]
             {
             new Claim(ClaimTypes.Name, userEmail),
-            new Claim(ClaimTypes.Role, role)  // This is where we specify roles, like "Admin"
+            new Claim(ClaimTypes.Role, role) 
         };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_secretKey));
@@ -34,7 +34,7 @@ namespace HotelManagement.WebAPI.Middleware
                 issuer: _issuer,
                 audience: _audience,
                 claims: claims,
-                expires: DateTime.Now.AddDays(1),  // Token expiry time
+                expires: DateTime.Now.AddDays(1),  
                 signingCredentials: credentials
             );
 

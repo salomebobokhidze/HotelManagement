@@ -15,7 +15,7 @@ namespace HotelManagement.Infrastructure.Repositories
             Task AddAsync(Hotel hotel);
             Task UpdateAsync(Hotel hotel);
             Task<bool> DeleteAsync(int id);
-            Task<IEnumerable<Hotel>> GetFilteredHotelsAsync(string filter); // Add this method
+            Task<IEnumerable<Hotel>> GetFilteredHotelsAsync(string filter); 
            
         }
     }

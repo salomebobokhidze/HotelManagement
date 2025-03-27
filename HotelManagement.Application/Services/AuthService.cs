@@ -27,19 +27,19 @@ namespace HotelManagement.Application.Services
             _configuration = configuration;
         }
 
-        // Unified Register method
+        
         public async Task<AuthResponseDto> RegisterAsync(RegisterUserDto registerDto)
         {
             return await RegisterGuestAsync(registerDto);
         }
 
-        // Register with CreateGuestDTO
+        
         public async Task<AuthResponseDto> RegisterAsync(CreateGuestDTO createGuest)
         {
             return await RegisterGuestAsync(createGuest);
         }
 
-        // Unified Login method
+        
         public async Task<AuthResponseDto> LoginAsync(LoginDto loginDto)
         {
             return await LoginUserAsync(loginDto);
@@ -47,7 +47,7 @@ namespace HotelManagement.Application.Services
 
         public async Task<AuthResponseDto> RegisterGuestAsync(RegisterUserDto registerDto)
         {
-            // Check if email exists
+            
             var userExists = await _userManager.FindByEmailAsync(registerDto.Email);
             if (userExists != null)
                 return new AuthResponseDto
@@ -56,7 +56,7 @@ namespace HotelManagement.Application.Services
                     Message = "Email already exists"
                 };
 
-            // Check if personal number exists
+            
             var personalNumberExists = await _userManager.Users
                 .AnyAsync(u => u.PersonalNumber == registerDto.PersonalNumber);
             if (personalNumberExists)
@@ -103,7 +103,7 @@ namespace HotelManagement.Application.Services
 
         public async Task<AuthResponseDto> RegisterGuestAsync(CreateGuestDTO createGuest)
         {
-            // Check if email exists
+            
             var userExists = await _userManager.FindByEmailAsync(createGuest.Email);
             if (userExists != null)
                 return new AuthResponseDto
@@ -112,7 +112,7 @@ namespace HotelManagement.Application.Services
                     Message = "Email already exists"
                 };
 
-            // Check if personal number exists
+            
             var personalNumberExists = await _userManager.Users
                 .AnyAsync(u => u.PersonalNumber == createGuest.PersonalNumber);
             if (personalNumberExists)
