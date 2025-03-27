@@ -27,6 +27,24 @@ namespace HotelManagement.Application.Services
             _configuration = configuration;
         }
 
+        // Unified Register method
+        public async Task<AuthResponseDto> RegisterAsync(RegisterUserDto registerDto)
+        {
+            return await RegisterGuestAsync(registerDto);
+        }
+
+        // Register with CreateGuestDTO
+        public async Task<AuthResponseDto> RegisterAsync(CreateGuestDTO createGuest)
+        {
+            return await RegisterGuestAsync(createGuest);
+        }
+
+        // Unified Login method
+        public async Task<AuthResponseDto> LoginAsync(LoginDto loginDto)
+        {
+            return await LoginUserAsync(loginDto);
+        }
+
         public async Task<AuthResponseDto> RegisterGuestAsync(RegisterUserDto registerDto)
         {
             // Check if email exists
@@ -267,21 +285,6 @@ namespace HotelManagement.Application.Services
                 throw new SecurityTokenException("Invalid token");
 
             return principal;
-        }
-
-        public Task<AuthResponseDto> RegisterAsync(RegisterUserDto registerDto)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<AuthResponseDto> RegisterAsync(CreateGuestDTO createGuest)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<AuthResponseDto> LoginAsync(LoginDto loginDto)
-        {
-            throw new NotImplementedException();
         }
     }
 }
